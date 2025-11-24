@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -12,10 +13,14 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::all();
-        return view('products', ['products' => $products]);
+        $perPage = (int) $request->query('per_page', 12);
+        $perPage = $perPage > 0 && $perPage <= 100 ? $perPage : 12;
+
+        $products = Product::orderBy('created_at', 'desc')->paginate($perPage)->appends(['per_page' => $perPage]);
+
+        return view('products', ['products' => $products, 'perPage' => $perPage]);
     }
 
     /**
@@ -25,7 +30,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        return view('create_product');
     }
 
     /**
@@ -36,7 +41,25 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'amount' => 'required|integer',
+            'image' => 'nullable|image|max:2048',
+            'is_active' => 'sometimes|boolean',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'public');
+            $data['image'] = $path;
+        }
+
+        $data['is_active'] = $request->has('is_active') ? (bool) $request->input('is_active') : false;
+
+        Product::create($data);
+
+        return redirect()->route('products.index')->with('success', 'Product created successfully.');
+
     }
 
     /**
@@ -59,7 +82,9 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        //
+        $product = Product::find ($id);
+        return view('edit_product', ['product' => $product]);
+        
     }
 
     /**
@@ -71,7 +96,30 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $product = Product::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'amount' => 'required|integer',
+            'image' => 'nullable|image|max:2048',
+            'is_active' => 'sometimes|boolean',
+        ]);
+
+        if ($request->hasFile('image')) {
+            // delete old image if exists
+            if ($product->image && Storage::disk('public')->exists($product->image)) {
+                Storage::disk('public')->delete($product->image);
+            }
+            $path = $request->file('image')->store('products', 'public');
+            $data['image'] = $path;
+        }
+
+        $data['is_active'] = $request->has('is_active') ? (bool) $request->input('is_active') : false;
+
+        $product->update($data);
+
+        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
     /**
@@ -82,6 +130,14 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $product = Product::findOrFail($id);
+
+        if ($product->image && Storage::disk('public')->exists($product->image)) {
+            Storage::disk('public')->delete($product->image);
+        }
+
+        $product->delete();
+
+        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }
 }

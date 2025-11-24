@@ -41,36 +41,20 @@ p{
     padding-right: 25px;
 }
 .row{
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: space-around;
+    /* Use Bootstrap .row instead — keep a minimal fallback */
 }
 .col-2{
-    flex-basis: 50%;
-    min-width: 300px;
+    /* Prefer Bootstrap grid classes (col-6, col-md-4 etc). Kept for legacy views but avoid layout rules here. */
 }
 .col-2 img{
     max-width: 100%;
-    padding: 50px 0;
 }
 .col-2 h1{
     font-size: 50px;
     line-height: 60px;
     margin: 25px 0;
 }
-.btn{
-    display: inline-block;
-    background: #ff523b;
-    color: white;
-    padding: 8px 30px;
-    margin: 30px 0;
-    border-radius: 30px;
-    transition: background 0.5s;
-}
-.btn:hover{
-    background: #563434;
-}
+/* Remove .btn override so Bootstrap's .btn styles apply. Use .app-btn if custom styling needed. */
 .header{
     background: radial-gradient(#fff,#ffd6d6);
 }
@@ -95,11 +79,9 @@ p{
     padding-right: 25px;
 }
 .col-4{
-    flex-basis: 25%;
+    /* Prefer Bootstrap columns (col-md-3). Keep minimal card spacing */
     padding: 10px;
-    min-width: 200px;
-    margin-bottom: 50px;
-    transition: transform 0.5s;
+    margin-bottom: 20px;
 }
 .col-4 img{
     width: 100%;
@@ -270,17 +252,6 @@ select:focus{
 }
 .page-btn span{
     display: inline-block;
-    border: 1px solid #ff523b;
-    margin-left: 10px;
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    line-height: 40px;
-    cursor: pointer;
-}
-.page-btn span:hover{
-    background: #ff523b;
-    color: white;
 }
 
 /* Single Product */
